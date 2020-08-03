@@ -1,15 +1,16 @@
 //Requires
 const express = require('express')
-const firebase = require("firebase")
+const firebase = require('firebase')
 const port = 2100
 const app = express()
 const bodyParser = require('body-parser')
+const { analytics } = require('firebase')
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 firebase.initializeApp({
-    databaseURL: "https://smapp-560ec.firebaseio.com/",
+    databaseURL: 'https://smapp-560ec.firebaseio.com/',
 })
 
 const db = firebase.database()
@@ -21,6 +22,10 @@ app.listen(port, () => {
 //RUTAS GENERALES
 app.get('/', (req, res) => {
     getAll(res)
+})
+
+app.get('/paciente', (req, res) => {
+    getPaciente(req, res)
 })
 
 //RUTAS PISOS
@@ -53,6 +58,10 @@ app.post('/addEmpleado', (req, res) => {
     agregarEmpleado(req, res)
 })
 
+app.post('/actualizarEmpleado', (req, res) => {
+    actualizarEmpleado(req, res)
+})
+
 app.post('/eliminarEmpleado', (req, res) => {
     eliminarEmpleado(req, res)
 })
@@ -70,6 +79,23 @@ app.post('/eliminarHabitacion', (req, res) => {
     eliminarHabitacion(req, res)
 })
 
+//RUTAS HABITACIONES
+app.get('/camilla', (req, res) => {
+    getCamillaByID(req, res)
+})
+
+app.post('/addCamilla', (req, res) => {
+    agregarCamilla(req, res)
+})
+
+app.post('/actualizarCamilla', (req, res) => {
+    actualizarCamilla(req, res)
+})
+
+app.post('/eliminarCamilla', (req, res) => {
+    eliminarCamilla(req, res)
+})
+
 //FUNCIONES GENERALES
 
 function getAll(res) {
@@ -77,7 +103,7 @@ function getAll(res) {
         res.status(200).json({
             ok: true,
             mensaje: 'bdd completa',
-            "data": snapshot.val()
+            'data': snapshot.val()
         })
     })
 }
@@ -87,7 +113,8 @@ function getAll(res) {
 async function agregarPiso(req, res) {
     try {
         db.ref('Pisos/' + req.body.id).set({
-            nombre: req.body.nombre
+            nombre: req.body.nombre,
+            id: req.body.id
         })
         res.status(200).json({
             mensaje: 'Se ha agregado el piso con éxito'
@@ -103,22 +130,33 @@ async function eliminarPiso(req, res) {
     try {
         await db.ref('Pisos/' + req.body.id).remove()
         res.status(200).json({
-            mensaje: "Piso eliminado con exito"
+            mensaje: 'Piso eliminado con exito'
         })
     } catch {
         res.status(409).json({
-            mensaje: "No se ha podido eliminar el piso"
+            mensaje: 'No se ha podido eliminar el piso'
         })
     }
 }
 
 function getPisoByID(req, res) {
-    db.ref('Pisos/' + req.query.id).on('value', function(snapshot) {
-        res.status(200).json({
-            id: req.query.id,
-            data: snapshot.val()
+    try {
+        db.ref('Pisos/' + req.query.id).on('value', function(snapshot) {
+            snapshot.val() !== null ? (
+                res.status(200).json({
+                    data: snapshot.val()
+                })
+            ) : (
+                res.status(404).json({
+                    mensaje: 'no existe el piso'
+                })
+            )
         })
-    })
+    } catch {
+        res.status(409).json({
+            mensaje: 'no se ha podido realizar la petición'
+        })
+    }
 }
 
 function getPisos(res) {
@@ -131,7 +169,7 @@ function getPisos(res) {
             res.status(200).json({
                 ok: true,
                 mensaje: 'bdd completa',
-                "Pisos": snapshot.val().Pisos
+                Pisos: snapshot.val().Pisos
             })
         )
     })
@@ -149,7 +187,7 @@ function getEmpleados(res) {
             res.status(200).json({
                 ok: true,
                 mensaje: 'Lista de empleados',
-                "Empleados": snapshot.val().Empleados
+                Empleados: snapshot.val().Empleados
             })
         )
     })
@@ -159,13 +197,13 @@ function getEmpleadoByID(req, res) {
     db.ref('Empleados/' + req.query.rut).on('value', function(snapshot) {
         (snapshot.val()[req.query.rut] !== null ? (
             res.status(200).json({
-                mensaje: "Empleado encontrado",
+                mensaje: 'Empleado encontrado',
                 rut: req.query.rut,
                 data: snapshot.val()
             })
         ) : (
             res.status(404).json({
-                mensaje: "Empleado no encontrado",
+                mensaje: 'Empleado no encontrado',
             })
         ))
     })
@@ -175,6 +213,7 @@ async function agregarEmpleado(req, res) {
     try {
         await db.ref('Empleados/' + req.body.rut).set({
             dv: req.body.dv,
+            rut: req.body.rut,
             nombre: req.body.nombre,
             pass: req.body.pass,
             rol: req.body.rol
@@ -193,28 +232,45 @@ async function eliminarEmpleado(req, res) {
     try {
         await db.ref('Empleados/' + req.body.rut).remove()
         res.status(200).json({
-            mensaje: "se ha eliminado el Empleado con exito"
+            mensaje: 'se ha eliminado el Empleado con exito'
         })
     } catch {
         res.status(409).json({
-            mensaje: "no se ha podido eliminar el Empleado"
+            mensaje: 'no se ha podido eliminar el Empleado'
         })
     }
 }
 
+async function actualizarEmpleado(req, res) {
+    try {
+        await db.ref('Empleados/' + req.body.rut).update({
+            nombre: req.body.nombre,
+            pass: req.body.pass,
+            rol: req.body.rol
+        })
+        res.status(200).json({
+            mensaje: 'actualización realizada con exito'
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: 'no se ha logrado realizar la actualización'
+        })
+    }
+}
 //FUNCIONES HABITACION
 
 async function agregarHabitacion(req, res) {
     try {
-        db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
+        await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
             id: req.body.id
         })
+
         res.status(200).json({
-            mensaje: 'Se ha agregado el Habitacion con éxito'
+            mensaje: 'Se ha agregado la Habitacion con éxito'
         })
     } catch {
         res.status(409).json({
-            mensaje: 'No se ha podido agregar el Habitacion'
+            mensaje: 'No se ha podido agregar la Habitacion'
         })
     }
 }
@@ -223,19 +279,124 @@ async function eliminarHabitacion(req, res) {
     try {
         await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).remove()
         res.status(200).json({
-            mensaje: "Habitacion eliminado con exito"
+            mensaje: 'Habitacion eliminada con exito'
         })
     } catch {
         res.status(409).json({
-            mensaje: "No se ha podido eliminar el Habitacion"
+            mensaje: 'No se ha podido eliminar la Habitacion'
         })
     }
 }
 
 function getHabitacionByID(req, res) {
-    db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.id).on('value', function(snapshot) {
-        res.status(200).json({
-            data: snapshot.val()
+    try {
+        db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.id).on('value', function(snapshot) {
+            snapshot.val() !== null ? (
+                res.status(200).json({
+                    data: snapshot.val()
+                })
+            ) : (
+                res.status(404).json({
+                    mensaje: 'habitacion no encontrada'
+                })
+            )
         })
-    })
+    } catch {
+        res.status(409).json({
+            mensaje: 'no se ha podido realizar la petición'
+        })
+    }
+}
+
+//FUNCIONES CAMILLAS
+
+async function agregarCamilla(req, res) {
+    try {
+        db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).set({
+            estado: 'disponible',
+            id: req.body.id,
+            nombrePaciente: '',
+            rutPaciente: ''
+        })
+        res.status(200).json({
+            mensaje: 'Se ha agregado la Camilla con éxito'
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: 'No se ha podido agregar la Camilla'
+        })
+    }
+}
+
+async function eliminarCamilla(req, res) {
+    try {
+        await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).remove()
+        res.status(200).json({
+            mensaje: 'Camilla eliminado con exito'
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: 'No se ha podido eliminar el Camilla'
+        })
+    }
+}
+
+function getCamillaByID(req, res) {
+    try {
+        db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.habitacion + '/Camillas/' + req.query.id).on('value', function(snapshot) {
+            snapshot.val() !== null ? (
+                res.status(200).json({
+                    data: snapshot.val()
+                })
+            ) : (
+                res.status(404).json({
+                    mensaje: 'no existe la camilla'
+                })
+
+            )
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: 'no se ha podido realizar la petición'
+        })
+    }
+}
+
+async function actualizarCamilla(req, res) {
+    try {
+        await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).update({
+            estado: req.body.estado,
+            nombrePaciente: req.body.nombrePaciente,
+            rutPaciente: req.body.rutPaciente
+        })
+        await actualizarHistorial(req, res)
+        res.status(200).json({
+            mensaje: 'Actualización realizada'
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: 'no se ha logrado la actualización'
+        })
+    }
+}
+
+async function actualizarHistorial(req, res) {
+    try {
+        await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id + '/Historial/' + req.body.historyID).set({
+            nombrePaciente: req.body.nombrePaciente,
+            rutPaciente: req.body.rutPaciente,
+            idCamilla: req.body.id,
+            id: req.body.historyID,
+            fechaInicio: req.body.dateIn,
+            fechaTermino: req.body.dateOut
+        })
+        res.status(200).json({
+            mensaje: 'Actualización realizada con exito'
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: 'Actualización fallida'
+        })
+    }
+
 }
