@@ -40,6 +40,36 @@ app.post('/eliminarPiso', (req, res) => {
     eliminarPiso(req, res)
 })
 
+//RUTAS EMPLEADOS
+app.get('/empleados', (req, res) => {
+    getEmpleados(res)
+})
+
+app.get('/empleado', (req, res) => {
+    getEmpleadoByID(req, res)
+})
+
+app.post('/addEmpleado', (req, res) => {
+    agregarEmpleado(req, res)
+})
+
+app.post('/eliminarEmpleado', (req, res) => {
+    eliminarEmpleado(req, res)
+})
+
+//RUTAS HABITACIONES
+app.get('/habitacion', (req, res) => {
+    getHabitacionByID(req, res)
+})
+
+app.post('/addHabitacion', (req, res) => {
+    agregarHabitacion(req, res)
+})
+
+app.post('/eliminarHabitacion', (req, res) => {
+    eliminarHabitacion(req, res)
+})
+
 //FUNCIONES GENERALES
 
 function getAll(res) {
@@ -69,8 +99,17 @@ async function agregarPiso(req, res) {
     }
 }
 
-function eliminarPiso(req, res) {
-    db.ref('Pisos/' + req.body.id).remove()
+async function eliminarPiso(req, res) {
+    try {
+        await db.ref('Pisos/' + req.body.id).remove()
+        res.status(200).json({
+            mensaje: "Piso eliminado con exito"
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: "No se ha podido eliminar el piso"
+        })
+    }
 }
 
 function getPisoByID(req, res) {
@@ -97,24 +136,6 @@ function getPisos(res) {
         )
     })
 }
-
-//RUTAS EMPLEADOS
-
-app.get('/empleados', (req, res) => {
-    getEmpleados(res)
-})
-
-app.get('/empleado', (req, res) => {
-    getEmpleadoByID(req, res)
-})
-
-app.post('/addEmpleado', (req, res) => {
-    agregarEmpleado(req, res)
-})
-
-app.post('/eliminarEmpleado', (req, res) => {
-    eliminarEmpleado(req, res)
-})
 
 //FUNCIONES EMPLEADOS
 
@@ -179,4 +200,42 @@ async function eliminarEmpleado(req, res) {
             mensaje: "no se ha podido eliminar el Empleado"
         })
     }
+}
+
+//FUNCIONES HABITACION
+
+async function agregarHabitacion(req, res) {
+    try {
+        db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
+            id: req.body.id
+        })
+        res.status(200).json({
+            mensaje: 'Se ha agregado el Habitacion con éxito'
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: 'No se ha podido agregar el Habitacion'
+        })
+    }
+}
+
+async function eliminarHabitacion(req, res) {
+    try {
+        await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).remove()
+        res.status(200).json({
+            mensaje: "Habitacion eliminado con exito"
+        })
+    } catch {
+        res.status(409).json({
+            mensaje: "No se ha podido eliminar el Habitacion"
+        })
+    }
+}
+
+function getHabitacionByID(req, res) {
+    db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.id).on('value', function(snapshot) {
+        res.status(200).json({
+            data: snapshot.val()
+        })
+    })
 }
