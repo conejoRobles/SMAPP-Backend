@@ -5,6 +5,7 @@ const cors = require('cors')
 const port = 2100
 const app = express()
 const bodyParser = require('body-parser')
+const bcrypt = require('bcrypt')
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -234,7 +235,8 @@ async function agregarEmpleado(req, res) {
             dv: req.body.dv,
             rut: req.body.rut,
             nombre: req.body.nombre,
-            pass: req.body.pass,
+            // pass: req.body.pass,
+            pass: bcrypt.hashSync(req.body.pass, 10), //traspaso de pass a codigo hash
             rol: req.body.rol
         })
         res.status(200).json({
