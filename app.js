@@ -1,13 +1,22 @@
 //Requires
 const express = require('express')
 const firebase = require('firebase')
+const cors = require('cors')
 const port = 2100
 const app = express()
 const bodyParser = require('body-parser')
-const { analytics } = require('firebase')
 
+app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
+app.use(function(req, res, next) {
+    //Enabling Cords
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-cliente-token, x-client-secret, Authorization");
+    next();
+});
 
 firebase.initializeApp({
     databaseURL: 'https://smapp-560ec.firebaseio.com/',
