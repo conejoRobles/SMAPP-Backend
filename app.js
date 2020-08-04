@@ -80,6 +80,10 @@ app.get('/habitacion', (req, res) => {
     getHabitacionByID(req, res)
 })
 
+app.get('/habitaciones', (req, res) => {
+    getHabitaciones(req, res)
+})
+
 app.post('/addHabitacion', (req, res) => {
     agregarHabitacion(req, res)
 })
@@ -91,6 +95,10 @@ app.post('/eliminarHabitacion', (req, res) => {
 //RUTAS HABITACIONES
 app.get('/camilla', (req, res) => {
     getCamillaByID(req, res)
+})
+
+app.get('/camillas', (req, res) => {
+    getCamillas(req, res)
 })
 
 app.post('/addCamilla', (req, res) => {
@@ -126,10 +134,12 @@ async function agregarPiso(req, res) {
             id: req.body.id
         })
         res.status(200).json({
+            ok: true,
             mensaje: 'Se ha agregado el piso con éxito'
         })
     } catch {
         res.status(409).json({
+            ok: false,
             mensaje: 'No se ha podido agregar el piso'
         })
     }
@@ -206,8 +216,8 @@ function getEmpleadoByID(req, res) {
     db.ref('Empleados/' + req.query.rut).on('value', function(snapshot) {
         (snapshot.val()[req.query.rut] !== null ? (
             res.status(200).json({
+                ok: true,
                 mensaje: 'Empleado encontrado',
-                rut: req.query.rut,
                 data: snapshot.val()
             })
         ) : (
@@ -228,6 +238,7 @@ async function agregarEmpleado(req, res) {
             rol: req.body.rol
         })
         res.status(200).json({
+            ok: true,
             mensaje: 'Se ha agregado el Empleado con éxito'
         })
     } catch {
@@ -282,6 +293,22 @@ async function agregarHabitacion(req, res) {
             mensaje: 'No se ha podido agregar la Habitacion'
         })
     }
+}
+
+function getHabitaciones(req, res) {
+    db.ref('/Pisos/' + req.query.piso + '/Habitaciones/').on('value', function(snapshot) {
+        snapshot.val() === null ? (
+            res.status(404).json({
+                mensaje: 'No se encontraron elementos',
+            })
+        ) : (
+            res.status(200).json({
+                ok: true,
+                mensaje: 'Habitaciones de piso: ' + req.query.piso,
+                Habitaciones: snapshot.val()
+            })
+        )
+    })
 }
 
 async function eliminarHabitacion(req, res) {
@@ -369,6 +396,22 @@ function getCamillaByID(req, res) {
             mensaje: 'no se ha podido realizar la petición'
         })
     }
+}
+
+function getCamillas(req, res) {
+    db.ref('/Pisos/' + req.query.piso + '/Habitaciones/' + req.query.habitacion + '/Camillas/').on('value', function(snapshot) {
+        snapshot.val() === null ? (
+            res.status(404).json({
+                mensaje: 'No se encontraron elementos',
+            })
+        ) : (
+            res.status(200).json({
+                ok: true,
+                mensaje: 'Habitaciones de la Habitacion: ' + req.query.habitacion,
+                Camillas: snapshot.val()
+            })
+        )
+    })
 }
 
 async function actualizarCamilla(req, res) {
