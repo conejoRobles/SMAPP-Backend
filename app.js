@@ -235,7 +235,6 @@ async function agregarEmpleado(req, res) {
             dv: req.body.dv,
             rut: req.body.rut,
             nombre: req.body.nombre,
-            // pass: req.body.pass,
             pass: bcrypt.hashSync(req.body.pass, 10), //traspaso de pass a codigo hash
             rol: req.body.rol
         })
