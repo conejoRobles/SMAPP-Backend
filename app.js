@@ -52,6 +52,10 @@ app.post('/login', (req, res) => {
             }
         } else {
             console.log('El usuario no existe')
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'El usuario no existe'
+            })
         }
     })
 })
