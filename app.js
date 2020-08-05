@@ -6,6 +6,7 @@ const port = 2100
 const app = express()
 const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -27,6 +28,47 @@ const db = firebase.database()
 
 app.listen(port, () => {
     console.log('Express Server - puerto ' + port + ' online')
+})
+
+app.post('/login', (req, res) => {
+    let body = req.body
+    db.ref('Empleados/' + body.rut).on('value', function(snapshot) {
+        if (snapshot.val() !== null) {
+            let emp = snapshot.val()
+            if (!bcrypt.compareSync(body.pass, snapshot.val().pass)) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Credenciales incorrectas (contraseña)'
+                })
+            } else {
+                let SEED = 'tu-mama-es-mi-nana'
+                let token = jwt.sign({ usuario: emp.pass }, SEED, { expiresIn: 2880 })
+                return res.status(200).json({
+                    ok: true,
+                    usuario: snapshot.val(),
+                    id: snapshot.val().rut,
+                    token
+                })
+            }
+        } else {
+            console.log('El usuario no existe')
+        }
+    })
+})
+app.use('/', (req, res, next) => {
+    let token = req.query.token
+    let SEED = 'tu-mama-es-mi-nana'
+    jwt.verify(token, SEED, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({
+                ok: false,
+                mensaje: 'token incorrecto',
+                errors: err
+            })
+        }
+        req.usuario = decoded.usuario
+        next()
+    })
 })
 
 //RUTAS GENERALES
@@ -197,7 +239,7 @@ function getPisos(res) {
 
 //FUNCIONES EMPLEADOS
 
-function getEmpleados(res) {
+async function getEmpleados(res) {
     db.ref('/').on('value', function(snapshot) {
         snapshot.val() === null ? (
             res.status(404).json({
@@ -213,7 +255,7 @@ function getEmpleados(res) {
     })
 }
 
-function getEmpleadoByID(req, res) {
+async function getEmpleadoByID(req, res) {
     db.ref('Empleados/' + req.query.rut).on('value', function(snapshot) {
         (snapshot.val()[req.query.rut] !== null ? (
             res.status(200).json({
