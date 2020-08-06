@@ -41,7 +41,7 @@ app.post('/login', (req, res) => {
                     mensaje: 'Credenciales incorrectas (contraseña)'
                 })
             } else {
-                let SEED = 'tu-mama-es-mi-nana'
+                let SEED = 'esto-es-semilla'
                 let token = jwt.sign({ usuario: emp.pass }, SEED, { expiresIn: 2880 })
                 return res.status(200).json({
                     ok: true,
@@ -51,7 +51,6 @@ app.post('/login', (req, res) => {
                 })
             }
         } else {
-            console.log('El usuario no existe')
             return res.status(400).json({
                 ok: false,
                 mensaje: 'El usuario no existe'
@@ -61,7 +60,7 @@ app.post('/login', (req, res) => {
 })
 app.use('/', (req, res, next) => {
     let token = req.query.token
-    let SEED = 'tu-mama-es-mi-nana'
+    let SEED = 'esto-es-semilla'
     jwt.verify(token, SEED, (err, decoded) => {
         if (err) {
             return res.status(401).json({
