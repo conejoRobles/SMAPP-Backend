@@ -31,48 +31,48 @@ app.listen(port, () => {
 })
 
 app.post('/login', (req, res) => {
-    let body = req.body
-    db.ref('Empleados/' + body.rut).on('value', function(snapshot) {
-        if (snapshot.val() !== null) {
-            let emp = snapshot.val()
-            if (!bcrypt.compareSync(body.pass, snapshot.val().pass)) {
+        let body = req.body
+        db.ref('Empleados/' + body.rut).on('value', function(snapshot) {
+            if (snapshot.val() !== null) {
+                let emp = snapshot.val()
+                if (!bcrypt.compareSync(body.pass, snapshot.val().pass)) {
+                    return res.status(400).json({
+                        ok: false,
+                        mensaje: 'Credenciales incorrectas (contraseña)'
+                    })
+                } else {
+                    let SEED = 'esto-es-semilla'
+                    let token = jwt.sign({ usuario: emp.pass }, SEED, { expiresIn: 2880 })
+                    return res.status(200).json({
+                        ok: true,
+                        usuario: snapshot.val(),
+                        id: snapshot.val().rut,
+                        token
+                    })
+                }
+            } else {
                 return res.status(400).json({
                     ok: false,
-                    mensaje: 'Credenciales incorrectas (contraseña)'
-                })
-            } else {
-                let SEED = 'esto-es-semilla'
-                let token = jwt.sign({ usuario: emp.pass }, SEED, { expiresIn: 2880 })
-                return res.status(200).json({
-                    ok: true,
-                    usuario: snapshot.val(),
-                    id: snapshot.val().rut,
-                    token
+                    mensaje: 'El usuario no existe'
                 })
             }
-        } else {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'El usuario no existe'
-            })
-        }
+        })
     })
-})
-app.use('/', (req, res, next) => {
-    let token = req.query.token
-    let SEED = 'esto-es-semilla'
-    jwt.verify(token, SEED, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({
-                ok: false,
-                mensaje: 'token incorrecto',
-                errors: err
-            })
-        }
-        req.usuario = decoded.usuario
-        next()
-    })
-})
+    /*app.use('/', (req, res, next) => {
+        let token = req.query.token
+        let SEED = 'esto-es-semilla'
+        jwt.verify(token, SEED, (err, decoded) => {
+            if (err) {
+                return res.status(401).json({
+                    ok: false,
+                    mensaje: 'token incorrecto',
+                    errors: err
+                })
+            }
+            req.usuario = decoded.usuario
+            next()
+        })
+    })*/
 
 //RUTAS GENERALES
 app.get('/', (req, res) => {
@@ -92,13 +92,6 @@ app.get('/piso', (req, res) => {
     getPisoByID(req, res)
 })
 
-app.post('/addPiso', (req, res) => {
-    agregarPiso(req, res)
-})
-
-app.post('/eliminarPiso', (req, res) => {
-    eliminarPiso(req, res)
-})
 
 //RUTAS EMPLEADOS
 app.get('/empleados', (req, res) => {
@@ -107,6 +100,36 @@ app.get('/empleados', (req, res) => {
 
 app.get('/empleado', (req, res) => {
     getEmpleadoByID(req, res)
+})
+
+
+
+//RUTAS HABITACIONES
+app.get('/habitacion', (req, res) => {
+    getHabitacionByID(req, res)
+})
+
+app.get('/habitaciones', (req, res) => {
+    getHabitaciones(req, res)
+})
+
+
+
+//RUTAS HABITACIONES
+app.get('/camilla', (req, res) => {
+    getCamillaByID(req, res)
+})
+
+app.get('/camillas', (req, res) => {
+    getCamillas(req, res)
+})
+
+app.post('/addPiso', (req, res) => {
+    agregarPiso(req, res)
+})
+
+app.post('/eliminarPiso', (req, res) => {
+    eliminarPiso(req, res)
 })
 
 app.post('/addEmpleado', (req, res) => {
@@ -121,30 +144,12 @@ app.post('/eliminarEmpleado', (req, res) => {
     eliminarEmpleado(req, res)
 })
 
-//RUTAS HABITACIONES
-app.get('/habitacion', (req, res) => {
-    getHabitacionByID(req, res)
-})
-
-app.get('/habitaciones', (req, res) => {
-    getHabitaciones(req, res)
-})
-
 app.post('/addHabitacion', (req, res) => {
     agregarHabitacion(req, res)
 })
 
 app.post('/eliminarHabitacion', (req, res) => {
     eliminarHabitacion(req, res)
-})
-
-//RUTAS HABITACIONES
-app.get('/camilla', (req, res) => {
-    getCamillaByID(req, res)
-})
-
-app.get('/camillas', (req, res) => {
-    getCamillas(req, res)
 })
 
 app.post('/addCamilla', (req, res) => {
