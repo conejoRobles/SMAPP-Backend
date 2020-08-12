@@ -18,7 +18,6 @@ app.listen(port, () => {
     console.log('Express Server - puerto ' + port + ' online')
 })
 
-app.use(bodyParser.urlencoded({ extended: true }))
 app.use(function(req, res, next) {
     //Enabling Cords
     res.header("Access-Control-Allow-Origin", "*");
@@ -27,10 +26,10 @@ app.use(function(req, res, next) {
         "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-cliente-token, x-client-secret, Authorization");
     next();
 });
-app.use(cors())
 app.use(bodyParser.json())
-
-app.post('/login', (req, res) => {
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(cors())
+app.post('/login', async(req, res) => {
     let body = req.body
     db.ref('Empleados/' + body.rut).on('value', function(snapshot) {
         if (snapshot.val() !== null) {
