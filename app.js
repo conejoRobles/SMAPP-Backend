@@ -357,6 +357,7 @@ async function agregarCamilla(req, res) {
         estado: 'disponible',
         id: req.body.id,
         nombrePaciente: '',
+        apellidoPaciente: '',
         rutPaciente: ''
     })
 
@@ -410,6 +411,7 @@ async function actualizarCamilla(req, res) {
     await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).update({
         estado: req.body.estado,
         nombrePaciente: req.body.nombrePaciente,
+        apellidoPaciente: req.body.apellidoPaciente,
         rutPaciente: req.body.rutPaciente
     })
     await actualizarHistorial(req, res)
@@ -421,6 +423,7 @@ async function actualizarCamilla(req, res) {
 async function actualizarHistorial(req, res) {
     await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id + '/Historial/' + req.body.historyID).set({
         nombrePaciente: req.body.nombrePaciente,
+        apellidoPaciente: req.body.apellidoPaciente,
         rutPaciente: req.body.rutPaciente,
         idCamilla: req.body.id,
         id: req.body.historyID,
