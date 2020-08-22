@@ -3,6 +3,7 @@ const express = require('express')
 const firebase = require('firebase')
 const cors = require('cors')
 const port = 2100
+const morgan = require('morgan')
 const app = express()
 const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
@@ -28,10 +29,10 @@ app.use(function(req, res, next) {
 });
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cors())
+app.use(cors({ origin: true }));
 app.post('/login', async(req, res) => {
     let body = req.body
-    db.ref('Empleados/' + body.rut).on('value', function(snapshot) {
+    db.ref('Empleados/' + body.rut).once('value', function(snapshot) {
         if (snapshot.val() !== null) {
             let emp = snapshot.val()
             if (!bcrypt.compareSync(body.pass, snapshot.val().pass)) {
@@ -72,6 +73,8 @@ app.use('/', (req, res, next) => {
         next()
     })
 })
+
+app.use(morgan('dev'))
 
 //RUTAS GENERALES
 app.get('/', (req, res) => {
@@ -163,7 +166,7 @@ app.post('/eliminarCamilla', (req, res) => {
 //FUNCIONES GENERALES
 
 function getAll(res) {
-    db.ref('/').on('value', (snapshot) => {
+    db.ref('/').once('value', (snapshot) => {
         return res.status(200).json({
             ok: true,
             mensaje: 'bdd completa',
@@ -195,7 +198,7 @@ async function eliminarPiso(req, res) {
 }
 
 function getPisoByID(req, res) {
-    db.ref('Pisos/' + req.query.id).on('value', function(snapshot) {
+    db.ref('Pisos/' + req.query.id).once('value', function(snapshot) {
         return snapshot.val() !== null ? (
             res.status(200).json({
                 data: snapshot.val()
@@ -210,7 +213,7 @@ function getPisoByID(req, res) {
 }
 
 function getPisos(res) {
-    db.ref('/').on('value', function(snapshot) {
+    db.ref('/').once('value', function(snapshot) {
         return snapshot.val() === null ? (
             res.status(404).json({
                 mensaje: 'No se encontraron elementos',
@@ -229,7 +232,7 @@ function getPisos(res) {
 //FUNCIONES EMPLEADOS
 
 async function getEmpleados(res) {
-    db.ref('/').on('value', function(snapshot) {
+    db.ref('/').once('value', function(snapshot) {
         return snapshot.val() === null ? (
             res.status(404).json({
                 mensaje: 'No se encontraron empleados',
@@ -246,7 +249,7 @@ async function getEmpleados(res) {
 }
 
 async function getEmpleadoByID(req, res) {
-    db.ref('Empleados/' + req.query.rut).on('value', function(snapshot) {
+    db.ref('Empleados/' + req.query.rut).once('value', function(snapshot) {
         return (snapshot.val()[req.query.rut] !== null ? (
             res.status(200).json({
                 ok: true,
@@ -309,7 +312,7 @@ async function agregarHabitacion(req, res) {
 }
 
 function getHabitaciones(req, res) {
-    db.ref('/Pisos/' + req.query.piso + '/Habitaciones/').on('value', function(snapshot) {
+    db.ref('/Pisos/' + req.query.piso + '/Habitaciones/').once('value', function(snapshot) {
         return snapshot.val() === null ? (
             res.status(404).json({
                 mensaje: 'No se encontraron elementos',
@@ -334,7 +337,7 @@ async function eliminarHabitacion(req, res) {
 }
 
 function getHabitacionByID(req, res) {
-    db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.id).on('value', function(snapshot) {
+    db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.id).once('value', function(snapshot) {
         return snapshot.val() !== null ? (
             res.status(200).json({
                 data: snapshot.val()
@@ -375,7 +378,7 @@ async function eliminarCamilla(req, res) {
 }
 
 function getCamillaByID(req, res) {
-    db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.habitacion + '/Camillas/' + req.query.id).on('value', function(snapshot) {
+    db.ref('Pisos/' + req.query.piso + '/Habitaciones/' + req.query.habitacion + '/Camillas/' + req.query.id).once('value', function(snapshot) {
         return snapshot.val() !== null ? (
             res.status(200).json({
                 data: snapshot.val()
@@ -391,7 +394,7 @@ function getCamillaByID(req, res) {
 }
 
 function getCamillas(req, res) {
-    db.ref('/Pisos/' + req.query.piso + '/Habitaciones/' + req.query.habitacion + '/Camillas/').on('value', function(snapshot) {
+    db.ref('/Pisos/' + req.query.piso + '/Habitaciones/' + req.query.habitacion + '/Camillas/').once('value', function(snapshot) {
         return snapshot.val() === null ? (
             res.status(404).json({
                 mensaje: 'No se encontraron elementos',
@@ -415,9 +418,6 @@ async function actualizarCamilla(req, res) {
         rutPaciente: req.body.rutPaciente
     })
     await actualizarHistorial(req, res)
-    return res.status(200).json({
-        mensaje: 'Actualización realizada'
-    })
 }
 
 async function actualizarHistorial(req, res) {
@@ -431,6 +431,6 @@ async function actualizarHistorial(req, res) {
         fechaTermino: req.body.dateOut
     })
     return res.status(200).json({
-        mensaje: 'Actualización realizada con exito'
+        mensaje: 'Actualización realizada'
     })
 }
