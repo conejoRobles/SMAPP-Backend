@@ -417,7 +417,13 @@ async function actualizarCamilla(req, res) {
         apellidoPaciente: req.body.apellidoPaciente,
         rutPaciente: req.body.rutPaciente
     })
-    await actualizarHistorial(req, res)
+    if (req.body.estado != 'disponible') {
+        await actualizarHistorial(req, res)
+    } else {
+        return res.status(200).json({
+            mensaje: 'Actualización realizada'
+        })
+    }
 }
 
 async function actualizarHistorial(req, res) {
