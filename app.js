@@ -59,6 +59,47 @@ app.post('/login', async(req, res) => {
         }
     })
 })
+app.post('/contactarAdmin', (req, res) => {
+        contacto(req, res)
+    })
+    //funcion para mandar correo
+function contacto(req, res) {
+    const nombre = req.body.nombre
+    const rut = req.body.rut
+    const email = req.body.email
+    const asunto = req.body.asunto
+    const descripcion = req.body.descripcion
+
+    const emisorPlataforma = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'gestionsmapp@gmail.com',
+            pass: 'smapp2020'
+        }
+    })
+    let payload = {
+        from: nombre,
+        to: 'gestionsmapp@gmail.com',
+        subject: asunto,
+        text: `Se ha presentado un problema y ${nombre} con rut ${rut} y correo ${email}, quiere contactarse contigo, la razon es: ${asunto}.\n Ademas agregó esto:\n ${descripcion}`
+    }
+    emisorPlataforma.sendMail(payload, (error) => {
+        if (error) {
+            console.log('Error Email: ' + error)
+            return res.status(500).json({
+                ok: false,
+                mensaje: error.message
+            })
+        } else {
+            console.log('Email enviado')
+            return res.status(200).json({
+                ok: true,
+                mensaje: 'Email enviado',
+                payload: descripcion
+            })
+        }
+    })
+}
 app.use('/', (req, res, next) => {
     let token = req.query.token || req.body.token
     let SEED = 'esto-es-semilla'
@@ -84,10 +125,6 @@ app.get('/', (req, res) => {
 
 app.get('/paciente', (req, res) => {
     getPaciente(req, res)
-})
-
-app.post('/contactarAdmin', (req, res) => {
-    contacto(req, res)
 })
 
 //RUTAS PISOS
@@ -442,45 +479,5 @@ async function actualizarHistorial(req, res) {
     })
     return res.status(200).json({
         mensaje: 'Actualización realizada'
-    })
-}
-
-//funcion para mandar correo
-function contacto(req, res) {
-    const nombre = req.body.nombre
-    const rut = req.body.rut
-    const email = req.body.email
-    const asunto = req.body.asunto
-    const descripcion = req.body.mensaje
-
-    const emisorPlataforma = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: 'gestionsmapp@gmail.com',
-            pass: 'smapp2020'
-        }
-    })
-    let payload = {
-        De: nombre,
-        Email: email,
-        Para: 'gamavemo@gmail.com',
-        Asunto: asunto,
-        Texto: `Se ha presentado un problema y ${nombre} con rut ${rut}, quiere contactarse contigo, la razon es: ${subject}.\n Ademas agregó esto:\n ${descripcion}`
-    }
-    emisorPlataforma.sendMail(payload, (error) => {
-        if (error) {
-            console.log('Error Email: ' + error)
-            return res.status(500).json({
-                ok: false,
-                mensaje: error.message
-            })
-        } else {
-            console.log('Email enviado')
-            return res.status(200).json({
-                ok: true,
-                mensaje: 'Email enviado',
-                payload: descripcion
-            })
-        }
     })
 }
