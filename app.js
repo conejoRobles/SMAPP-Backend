@@ -218,6 +218,45 @@ function getAll(res) {
     })
 }
 
+function getPaciente(req, res) {
+    db.ref('/').once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            let pisos = snap.val().Pisos
+            pisos.map((piso) => {
+                if (piso.id != 0 && piso != null && piso != undefined) {
+                    let Habitaciones = Object.values(piso.Habitaciones)
+                    Habitaciones.map(habitacion => {
+                        if (habitacion.id != 0 && habitacion != null && habitacion != undefined) {
+                            let Camillas = Object.values(habitacion.Camillas)
+                            Camillas.map(camilla => {
+                                if (camilla.id != 0 && camilla != null && camilla != undefined) {
+                                    if (camilla.estado == 'ocupada') {
+                                        if (req.query.rut == camilla.rutPaciente) {
+                                            return res.status(200).json({
+                                                ok: true,
+                                                mensaje: 'Paciente Encontrado',
+                                                'data': {
+                                                    piso: piso.id,
+                                                    habitacion: habitacion.id,
+                                                    camilla: camilla.id
+                                                }
+                                            })
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+            return res.status(404).json({
+                ok: false,
+                mensaje: 'No se ha encontrado al paciente'
+            })
+        }
+    })
+}
+
 //FUNCIONES DE PISO
 
 async function agregarPiso(req, res) {
