@@ -332,7 +332,7 @@ async function eliminarEmpleado(req, res) {
 async function actualizarEmpleado(req, res) {
     await db.ref('Empleados/' + req.body.rut).update({
         nombre: req.body.nombre,
-        pass: req.body.pass,
+        pass: bcrypt.hashSync(req.body.pass, 10),
         rol: req.body.rol
     })
 
