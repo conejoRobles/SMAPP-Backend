@@ -260,29 +260,37 @@ function getPaciente(req, res) {
 //FUNCIONES DE PISO
 
 async function agregarPiso(req, res) {
-    await db.ref('Pisos/' + req.body.id).set({
-        Habitaciones: {
-            '0': {
-                id: 0,
-                Camillas: {
-                    0: {
-                        id: 0,
-                        Historial: [{
-                            0: {
-                                id: 0
-                            }
-                        }]
+    db.ref('Pisos/' + req.body.id).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            return res.status(409).json({
+                ok: false,
+                mensaje: 'El piso ya existe'
+            })
+        }
+        await db.ref('Pisos/' + req.body.id).set({
+            Habitaciones: {
+                '0': {
+                    id: 0,
+                    Camillas: {
+                        0: {
+                            id: 0,
+                            Historial: [{
+                                0: {
+                                    id: 0
+                                }
+                            }]
+                        }
                     }
                 }
-            }
-        },
-        nombre: req.body.nombre,
-        id: req.body.id
-    })
+            },
+            nombre: req.body.nombre,
+            id: req.body.id
+        })
 
-    return res.status(200).json({
-        ok: true,
-        mensaje: 'Se ha agregado el piso con éxito'
+        return res.status(200).json({
+            ok: true,
+            mensaje: 'Se ha agregado el piso con éxito'
+        })
     })
 }
 
@@ -373,17 +381,26 @@ async function getEmpleadoByID(req, res) {
 }
 
 async function agregarEmpleado(req, res) {
-    await db.ref('Empleados/' + req.body.rut).set({
-        dv: req.body.dv,
-        rut: req.body.rut,
-        nombre: req.body.nombre,
-        pass: bcrypt.hashSync(req.body.pass, 10), //traspaso de pass a codigo hash
-        rol: req.body.rol
-    })
+    db.ref('Empleados/' + req.body.rut).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            return res.status(409).json({
+                ok: false,
+                mensaje: 'Ya existe el empleado'
+            })
+        }
 
-    return res.status(200).json({
-        ok: true,
-        mensaje: 'Se ha agregado el Empleado con éxito'
+        await db.ref('Empleados/' + req.body.rut).set({
+            dv: req.body.dv,
+            rut: req.body.rut,
+            nombre: req.body.nombre,
+            pass: bcrypt.hashSync(req.body.pass, 10), //traspaso de pass a codigo hash
+            rol: req.body.rol
+        })
+
+        return res.status(200).json({
+            ok: true,
+            mensaje: 'Se ha agregado el Empleado con éxito'
+        })
     })
 }
 
@@ -419,22 +436,31 @@ async function actualizarEmpleado(req, res) {
 //FUNCIONES HABITACION
 
 async function agregarHabitacion(req, res) {
-    await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
-        id: req.body.id,
-        Camillas: {
-            0: {
-                id: 0,
-                Historial: [{
+    db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            return res.status(409).json({
+                ok: false,
+                mensaje: 'La habitación ya existe'
+            })
+        } else {
+            await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
+                id: req.body.id,
+                Camillas: {
                     0: {
-                        id: 0
+                        id: 0,
+                        Historial: [{
+                            0: {
+                                id: 0
+                            }
+                        }]
                     }
-                }]
-            }
-        }
-    })
+                }
+            })
 
-    return res.status(200).json({
-        mensaje: 'Se ha agregado la Habitacion con éxito'
+            return res.status(200).json({
+                mensaje: 'Se ha agregado la Habitacion con éxito'
+            })
+        }
     })
 }
 
@@ -492,21 +518,32 @@ function getHabitacionByID(req, res) {
 //FUNCIONES CAMILLAS
 
 async function agregarCamilla(req, res) {
-    await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).set({
-        estado: 'disponible',
-        id: req.body.id,
-        nombrePaciente: '',
-        apellidoPaciente: '',
-        rutPaciente: '',
-        Historial: [{
-            0: {
-                id: 0
-            }
-        }]
-    })
+    db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            return res.status(409).json({
+                ok: false,
+                mensaje: 'La camilla ya existe'
+            })
 
-    return res.status(200).json({
-        mensaje: 'Se ha agregado la Camilla con éxito'
+        } else {
+            await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).set({
+                estado: 'disponible',
+                id: req.body.id,
+                nombrePaciente: '',
+                apellidoPaciente: '',
+                rutPaciente: '',
+                Historial: [{
+                    0: {
+                        id: 0
+                    }
+                }]
+            })
+
+            return res.status(200).json({
+                ok: true,
+                mensaje: 'Se ha agregado la Camilla con éxito'
+            })
+        }
     })
 }
 
