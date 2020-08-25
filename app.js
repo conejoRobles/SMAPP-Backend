@@ -100,21 +100,22 @@ function contacto(req, res) {
         }
     })
 }
-app.use('/', (req, res, next) => {
-    let token = req.query.token || req.body.token
-    let SEED = 'esto-es-semilla'
-    jwt.verify(token, SEED, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({
-                ok: false,
-                mensaje: 'token incorrecto',
-                errors: err
-            })
-        }
-        req.usuario = decoded.usuario
-        next()
-    })
-})
+
+// app.use('/', (req, res, next) => {
+//     let token = req.query.token || req.body.token
+//     let SEED = 'esto-es-semilla'
+//     jwt.verify(token, SEED, (err, decoded) => {
+//         if (err) {
+//             return res.status(401).json({
+//                 ok: false,
+//                 mensaje: 'token incorrecto',
+//                 errors: err
+//             })
+//         }
+//         req.usuario = decoded.usuario
+//         next()
+//     })
+// })
 
 app.use(morgan('dev'))
 
@@ -221,6 +222,21 @@ function getAll(res) {
 
 async function agregarPiso(req, res) {
     await db.ref('Pisos/' + req.body.id).set({
+        Habitaciones: {
+            '0': {
+                id: 0,
+                Camillas: {
+                    0: {
+                        id: 0,
+                        Historial: [{
+                            0: {
+                                id: 0
+                            }
+                        }]
+                    }
+                }
+            }
+        },
         nombre: req.body.nombre,
         id: req.body.id
     })
@@ -232,10 +248,20 @@ async function agregarPiso(req, res) {
 }
 
 async function eliminarPiso(req, res) {
-    await db.ref('Pisos/' + req.body.id).remove()
-
-    return res.status(200).json({
-        mensaje: 'Piso eliminado con exito'
+    db.ref('Pisos/' + req.body.id).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            await db.ref('Pisos/' + req.body.id).remove().then(() => {
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Piso eliminado con exito'
+                })
+            })
+        } else {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'El piso no existe'
+            })
+        }
     })
 }
 
@@ -323,10 +349,21 @@ async function agregarEmpleado(req, res) {
 }
 
 async function eliminarEmpleado(req, res) {
-    await db.ref('Empleados/' + req.body.rut).remove()
-    return res.status(200).json({
-        mensaje: 'se ha eliminado el Empleado con exito'
+    db.ref('Empleados/' + req.body.rut).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            await db.ref('Empleados/' + req.body.rut).remove()
+            return res.status(200).json({
+                ok: true,
+                mensaje: 'se ha eliminado el Empleado con exito'
+            })
+        } else {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'El Empleado no existe'
+            })
+        }
     })
+
 }
 
 async function actualizarEmpleado(req, res) {
@@ -344,7 +381,17 @@ async function actualizarEmpleado(req, res) {
 
 async function agregarHabitacion(req, res) {
     await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
-        id: req.body.id
+        id: req.body.id,
+        Camillas: {
+            0: {
+                id: 0,
+                Historial: [{
+                    0: {
+                        id: 0
+                    }
+                }]
+            }
+        }
     })
 
     return res.status(200).json({
@@ -370,10 +417,19 @@ function getHabitaciones(req, res) {
 }
 
 async function eliminarHabitacion(req, res) {
-    await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).remove()
-
-    return res.status(200).json({
-        mensaje: 'Habitacion eliminada con exito'
+    db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).remove()
+            return res.status(200).json({
+                ok: true,
+                mensaje: 'Habitacion eliminada con exito'
+            })
+        } else {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'No existe la Habitacion'
+            })
+        }
     })
 }
 
@@ -402,7 +458,12 @@ async function agregarCamilla(req, res) {
         id: req.body.id,
         nombrePaciente: '',
         apellidoPaciente: '',
-        rutPaciente: ''
+        rutPaciente: '',
+        Historial: [{
+            0: {
+                id: 0
+            }
+        }]
     })
 
     return res.status(200).json({
@@ -411,10 +472,19 @@ async function agregarCamilla(req, res) {
 }
 
 async function eliminarCamilla(req, res) {
-    await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).remove()
-
-    return res.status(200).json({
-        mensaje: 'Camilla eliminado con exito'
+    db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).remove()
+            return res.status(200).json({
+                ok: true,
+                mensaje: 'Camilla eliminado con exito'
+            })
+        } else {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'La Camilla no existe'
+            })
+        }
     })
 }
 
@@ -452,19 +522,27 @@ function getCamillas(req, res) {
 }
 
 async function actualizarCamilla(req, res) {
-    await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).update({
-        estado: req.body.estado,
-        nombrePaciente: req.body.nombrePaciente,
-        apellidoPaciente: req.body.apellidoPaciente,
-        rutPaciente: req.body.rutPaciente
+    db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).once('value', async(snap) => {
+        if (snap.val() != null && snap.val() != undefined) {
+            await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).update({
+                estado: req.body.estado,
+                nombrePaciente: req.body.nombrePaciente,
+                apellidoPaciente: req.body.apellidoPaciente,
+                rutPaciente: req.body.rutPaciente
+            })
+            if (req.body.estado != 'disponible') {
+                await actualizarHistorial(req, res)
+            } else {
+                return res.status(200).json({
+                    mensaje: 'Actualización realizada'
+                })
+            }
+        } else {
+            return res.status(500).json({
+                mensaje: 'La Camilla no existe'
+            })
+        }
     })
-    if (req.body.estado != 'disponible') {
-        await actualizarHistorial(req, res)
-    } else {
-        return res.status(200).json({
-            mensaje: 'Actualización realizada'
-        })
-    }
 }
 
 async function actualizarHistorial(req, res) {
