@@ -2,20 +2,24 @@
 const express = require('express')
 const firebase = require('firebase')
 const cors = require('cors')
+const port = process.env.PORT || 2100
 const morgan = require('morgan')
 const app = express()
 const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
-const port = process.env.PORT || 3977;
+
 firebase.initializeApp({
     databaseURL: 'https://smapp-560ec.firebaseio.com/',
 })
 
 const db = firebase.database()
-app.listen(port,()=>{
+
+app.listen(port, () => {
+    console.log('Express Server - puerto ' + port + ' online')
 })
+
 app.use(function(req, res, next) {
     //Enabling Cords
     res.header("Access-Control-Allow-Origin", "*");
