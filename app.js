@@ -285,7 +285,7 @@ async function agregarPiso(req, res) {
                 }
             },
             nombre: req.body.nombre,
-            id: req.body.id
+            id: +req.body.id
         })
 
         return res.status(200).json({
@@ -545,40 +545,33 @@ function getHabitacionByID(req, res) {
 async function agregarCamilla(req, res) {
     db.ref('Pisos/' + req.body.piso).once('value', async(snap) => {
         if (snap.val() != null && snap.val() != undefined && snap.val().id != 0) {
-            db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion).once('value', async(snap) => {
-                if (snap.val() != null && snap.val() != undefined && snap.val().id != 0) {
-                    db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).once('value', async(snap) => {
-                        if (snap.val() != null && snap.val() != undefined && snap.val().id != 0) {
-                            return res.status(409).json({
-                                ok: false,
-                                mensaje: 'La camilla ya existe'
-                            })
-                        } else {
-                            await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).set({
-                                estado: 'disponible',
-                                id: req.body.id,
-                                nombrePaciente: '',
-                                apellidoPaciente: '',
-                                rutPaciente: '',
-                                Historial: [{
-                                    0: {
-                                        id: 0
-                                    }
-                                }]
-                            })
-
-                            return res.status(200).json({
-                                ok: true,
-                                mensaje: 'Se ha agregado la Camilla con éxito'
-                            })
-                        }
-                    })
-                } else {
-                    return res.status(409).json({
-                        ok: false,
-                        mensaje: 'La habitación no existe'
-                    })
-                }
+            db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.habitacion).once('value', async(snapshot) => {
+                console.log(snapshot.val())
+                db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).once('value', async(snaps) => {
+                    if (snaps.val() != null && snaps.val() != undefined && snaps.val().id != 0) {
+                        return res.status(409).json({
+                            ok: false,
+                            mensaje: 'La camilla ya existe'
+                        })
+                    } else {
+                        await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).set({
+                            estado: 'disponible',
+                            id: req.body.id,
+                            nombrePaciente: '',
+                            apellidoPaciente: '',
+                            rutPaciente: '',
+                            Historial: [{
+                                0: {
+                                    id: 0
+                                }
+                            }]
+                        })
+                        return res.status(200).json({
+                            ok: true,
+                            mensaje: 'Se ha agregado la Camilla con éxito'
+                        })
+                    }
+                })
             })
         } else {
             return res.status(409).json({
