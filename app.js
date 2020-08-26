@@ -545,7 +545,7 @@ function getHabitacionByID(req, res) {
 async function agregarCamilla(req, res) {
     db.ref('Pisos/' + req.body.piso).once('value', async(snap) => {
         if (snap.val() != null && snap.val() != undefined && snap.val().id != 0) {
-            db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.habitacion).once('value', async(snap) => {
+            db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion).once('value', async(snap) => {
                 if (snap.val() != null && snap.val() != undefined && snap.val().id != 0) {
                     db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.habitacion + '/Camillas/' + req.body.id).once('value', async(snap) => {
                         if (snap.val() != null && snap.val() != undefined && snap.val().id != 0) {
