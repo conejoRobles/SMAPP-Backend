@@ -2,7 +2,6 @@
 const express = require('express')
 const firebase = require('firebase')
 const cors = require('cors')
-const port = 2100
 const morgan = require('morgan')
 const app = express()
 const bodyParser = require('body-parser')
@@ -15,10 +14,6 @@ firebase.initializeApp({
 })
 
 const db = firebase.database()
-
-app.listen(port, () => {
-    console.log('Express Server - puerto ' + port + ' online')
-})
 
 app.use(function(req, res, next) {
     //Enabling Cords
