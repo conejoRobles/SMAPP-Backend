@@ -8,13 +8,14 @@ const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
-
+const port = process.env.PORT || 3977;
 firebase.initializeApp({
     databaseURL: 'https://smapp-560ec.firebaseio.com/',
 })
 
 const db = firebase.database()
-
+app.listen(port,()=>{
+})
 app.use(function(req, res, next) {
     //Enabling Cords
     res.header("Access-Control-Allow-Origin", "*");
