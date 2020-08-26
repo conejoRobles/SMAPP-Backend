@@ -443,22 +443,30 @@ async function agregarHabitacion(req, res) {
                 mensaje: 'La habitación ya existe'
             })
         } else {
-            await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
-                id: req.body.id,
-                Camillas: {
-                    0: {
-                        id: 0,
-                        Historial: [{
+            let piso
+            db.ref('Pisos/' + req.body.piso).once('value', async function(snapshot) {
+                if (snapshot.val() != null && snapshot.val() != undefined && req.body.piso != 0) {
+                    await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
+                        id: req.body.id,
+                        Camillas: {
                             0: {
-                                id: 0
+                                id: 0,
+                                Historial: [{
+                                    0: {
+                                        id: 0
+                                    }
+                                }]
                             }
-                        }]
-                    }
+                        }
+                    })
+                    return res.status(200).json({
+                        mensaje: 'Se ha agregado la Habitacion con éxito'
+                    })
+                } else {
+                    return res.status(500).json({
+                        mensaje: 'El piso no existe'
+                    })
                 }
-            })
-
-            return res.status(200).json({
-                mensaje: 'Se ha agregado la Habitacion con éxito'
             })
         }
     })
