@@ -101,21 +101,21 @@ function contacto(req, res) {
     })
 }
 
-// app.use('/', (req, res, next) => {
-//     let token = req.query.token || req.body.token
-//     let SEED = 'esto-es-semilla'
-//     jwt.verify(token, SEED, (err, decoded) => {
-//         if (err) {
-//             return res.status(401).json({
-//                 ok: false,
-//                 mensaje: 'token incorrecto',
-//                 errors: err
-//             })
-//         }
-//         req.usuario = decoded.usuario
-//         next()
-//     })
-// })
+app.use('/', (req, res, next) => {
+    let token = req.query.token || req.body.token
+    let SEED = 'esto-es-semilla'
+    jwt.verify(token, SEED, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({
+                ok: false,
+                mensaje: 'token incorrecto',
+                errors: err
+            })
+        }
+        req.usuario = decoded.usuario
+        next()
+    })
+})
 
 app.use(morgan('dev'))
 
@@ -606,7 +606,7 @@ async function actualizarCamilla(req, res) {
                 apellidoPaciente: req.body.apellidoPaciente,
                 rutPaciente: req.body.rutPaciente
             })
-            if (req.body.estado != 'disponible') {
+            if (req.body.estado == 'ocupada') {
                 await actualizarHistorial(req, res)
             } else {
                 return res.status(200).json({
