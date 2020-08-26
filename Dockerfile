@@ -5,5 +5,5 @@ COPY package.json /SMAPP-Backend
 WORKDIR /SMAPP-Backend
 RUN apk --no-cache add --virtual builds-deps build-base python
 RUN npm install
-EXPOSE 3000
+EXPOSE 2100
 CMD node app.js
