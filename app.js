@@ -86,7 +86,7 @@ function contacto(req, res) {
     emisorPlataforma.sendMail(payload, (error) => {
         if (error) {
             console.log('Error Email: ' + error)
-            return res.status(500).json({
+            return res.status(409).json({
                 ok: false,
                 mensaje: error.message
             })
@@ -236,6 +236,7 @@ function getPaciente(req, res) {
                                                 ok: true,
                                                 mensaje: 'Paciente Encontrado',
                                                 'data': {
+                                                    nombrePaciente: camilla.nombrePaciente + ' ' + camilla.apellidoPaciente,
                                                     piso: piso.id,
                                                     habitacion: habitacion.id,
                                                     camilla: camilla.id
@@ -249,7 +250,7 @@ function getPaciente(req, res) {
                     })
                 }
             })
-            return res.status(404).json({
+            return res.status(409).json({
                 ok: false,
                 mensaje: 'No se ha encontrado al paciente'
             })
@@ -304,7 +305,7 @@ async function eliminarPiso(req, res) {
                 })
             })
         } else {
-            return res.status(500).json({
+            return res.status(409).json({
                 ok: false,
                 mensaje: 'El piso no existe'
             })
@@ -470,7 +471,7 @@ async function agregarHabitacion(req, res) {
                         mensaje: 'Se ha agregado la Habitacion con éxito'
                     })
                 } else {
-                    return res.status(500).json({
+                    return res.status(409).json({
                         mensaje: 'El piso no existe'
                     })
                 }
@@ -507,14 +508,14 @@ async function eliminarHabitacion(req, res) {
                         mensaje: 'Habitacion eliminada con exito'
                     })
                 } else {
-                    return res.status(500).json({
+                    return res.status(409).json({
                         ok: false,
                         mensaje: 'No existe la Habitacion'
                     })
                 }
             })
         } else {
-            return res.status(500).json({
+            return res.status(409).json({
                 ok: false,
                 mensaje: 'El piso no existe'
             })
@@ -573,14 +574,14 @@ async function agregarCamilla(req, res) {
                         }
                     })
                 } else {
-                    return res.status(500).json({
+                    return res.status(409).json({
                         ok: false,
                         mensaje: 'La habitación no existe'
                     })
                 }
             })
         } else {
-            return res.status(500).json({
+            return res.status(409).json({
                 ok: false,
                 mensaje: 'El piso no existe'
             })
@@ -597,7 +598,7 @@ async function eliminarCamilla(req, res) {
                 mensaje: 'Camilla eliminado con exito'
             })
         } else {
-            return res.status(500).json({
+            return res.status(409).json({
                 ok: false,
                 mensaje: 'La Camilla no existe'
             })
@@ -659,19 +660,19 @@ async function actualizarCamilla(req, res) {
                                 })
                             }
                         } else {
-                            return res.status(500).json({
+                            return res.status(409).json({
                                 mensaje: 'La Camilla no existe'
                             })
                         }
                     })
                 } else {
-                    return res.status(500).json({
+                    return res.status(409).json({
                         mensaje: 'La Habitación no existe'
                     })
                 }
             })
         } else {
-            return res.status(500).json({
+            return res.status(409).json({
                 mensaje: 'El piso no existe'
             })
         }
