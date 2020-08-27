@@ -101,21 +101,21 @@ function contacto(req, res) {
     })
 }
 
-app.use('/', (req, res, next) => {
-    let token = req.query.token || req.body.token
-    let SEED = 'esto-es-semilla'
-    jwt.verify(token, SEED, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({
-                ok: false,
-                mensaje: 'token incorrecto',
-                errors: err
-            })
-        }
-        req.usuario = decoded.usuario
-        next()
-    })
-})
+// app.use('/', (req, res, next) => {
+//     let token = req.query.token || req.body.token
+//     let SEED = 'esto-es-semilla'
+//     jwt.verify(token, SEED, (err, decoded) => {
+//         if (err) {
+//             return res.status(401).json({
+//                 ok: false,
+//                 mensaje: 'token incorrecto',
+//                 errors: err
+//             })
+//         }
+//         req.usuario = decoded.usuario
+//         next()
+//     })
+// })
 
 app.use(morgan('dev'))
 
@@ -456,16 +456,6 @@ async function agregarHabitacion(req, res) {
                 if (snapshot.val() != null && snapshot.val() != undefined && req.body.piso != 0) {
                     await db.ref('Pisos/' + req.body.piso + '/Habitaciones/' + req.body.id).set({
                         id: req.body.id,
-                        Camillas: {
-                            0: {
-                                id: 0,
-                                Historial: [{
-                                    0: {
-                                        id: 0
-                                    }
-                                }]
-                            }
-                        }
                     })
                     return res.status(200).json({
                         mensaje: 'Se ha agregado la Habitacion con éxito'
@@ -561,9 +551,7 @@ async function agregarCamilla(req, res) {
                             apellidoPaciente: '',
                             rutPaciente: '',
                             Historial: [{
-                                0: {
-                                    id: 0
-                                }
+                                id: 0
                             }]
                         })
                         return res.status(200).json({
